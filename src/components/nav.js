@@ -1,6 +1,7 @@
 import React, { useRef, useLayoutEffect } from 'react';
 import styled from 'styled-components';
 import gsap from "gsap";
+import AniLink from "gatsby-plugin-transition-link/AniLink"
 
 const Wrapper = styled.nav`
     width: 100%;
@@ -60,6 +61,10 @@ const Selects = styled.ul`
     align-items: center;
     margin-left: auto;
     list-style: none;
+    a{
+        color: inherit;
+        text-decoration: none;
+    }
 `;
 
 const Select = styled.li`
@@ -103,13 +108,19 @@ const Nav = () => {
             .staggerFrom(selects.current.childNodes, 0.5, { X: -10, opacity: 0, ease: "Power2.easeInOut" }, 0.1);
     }, [])
 
+    const navSelects = [
+        { href: "/offer", display: "Oferta" },
+        { href: "/about", display: "Info" },
+        { href: "/about", display: "FAQ" }
+    ]
+
     return(
         <Wrapper ref={nav}>
             <Brand ref={brand}>Black</Brand>
             <Selects ref={selects}>
-                <Select>Select</Select>
-                <Select>Select</Select>
-                <Select>Select</Select>
+                {navSelects.map( ({href, display}) => (
+                    <AniLink cover bg="#0C0B0D" to={href}><Select>{display}</Select></AniLink>
+                ))}
             </Selects>
         </Wrapper>
     )

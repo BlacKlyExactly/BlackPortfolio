@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion } from "framer-motion";
-import VisibilitySensor from "react-visibility-sensor";
+import Lightbox from 'react-image-lightbox';
+import 'react-image-lightbox/style.css';
 
 const Wrapper = styled(motion.div)`
     width: 100%;
@@ -10,8 +11,8 @@ const Wrapper = styled(motion.div)`
     align-items: center;
     background: #1A1A1C;
     padding: 50px 0vw;
-    margin-top: 50px;
-    margin-bottom: 50px;
+/*     margin-top: 50px;
+    margin-bottom: 50px; */
     transform-origin: left;
    
 `;
@@ -33,7 +34,7 @@ const Image = styled(motion.div)`
     position: relative;
     width: 328px;
     height: 192px;
-    background: #3D5AF1;
+    background: ${props=> props.color};
     margin: 12px 0px;
     cursor: pointer;
     @media screen and (min-width: 1000px) {
@@ -60,7 +61,7 @@ const Image = styled(motion.div)`
     }
 `;
 
-const LoadMoreButton = styled.button`
+const LoadMoreButton = styled(motion.button)`
     margin-top: 10px;
     width: 285px;
     height: 66px;
@@ -105,21 +106,6 @@ const LoadMoreButton = styled.button`
     }
 `;
 
-const WrapperVariants = {
-    enter: {
-        opacity: 1,
-        transition:{
-            when: "beforeChildren"
-        }
-    },
-    exit: {
-        opacity: 0,
-        transition:{
-            when: "afterChildren"
-        }
-    }
-}
-
 const ImagesVariants = {
     enter: {
         transition:{
@@ -136,55 +122,60 @@ const ImagesVariants = {
 const ImageVariants = {
     enter: {
        opacity: 1,
+       x: 0
     },
     exit: {
         opacity: 0,
+        x: -10
     }
 };
 
-const Gallery = ()=> {
-    const [ imagesState, setImagesState ] = useState(false);
-    const animate = imagesState ? "enter" : "exit";
+const Gallery = ({ animate })=> {
+    const [ boxState, setBoxState ] = useState(false);
+    const [ imagesCount, setImagesCount ] = useState(6);
+
+    const images = [
+        { image: require('../assets/example.png'), color: '#F15089' },
+        { image: require('../assets/example2.png'), color: '#FFFFFF' },
+        { image: require('../assets/example3.png'), color: '#EC2929' },
+        { image: require('../assets/example4.png'), color: '#344BC5' },
+        { image: require('../assets/example5.png'), color: '#C71BEA' },
+    ]
+    images.length = imagesCount;
+
+    const openImage = image => setBoxState(image);
+    const loadImages = count => setImagesCount(imgCount => imgCount + count);
 
     return(
-        <VisibilitySensor 
-            onChange={isVisible => {
-                if(!imagesState )setImagesState(isVisible)
-            }}
-            scrollCheck={true}
-        >
-            <Wrapper
-                variants={WrapperVariants}
+        <Wrapper>
+            {boxState && (
+                <Lightbox
+                    mainSrc={boxState}
+                    onCloseRequest={()=> setBoxState(false)}
+                />
+            )}
+            <Images
                 animate={animate}
-            >
-                <Images
-                    variants={ImagesVariants}
+                variants={ ImagesVariants }
+            >   
+                {images.map(image=> (
+                    <Image 
+                        variants={ImageVariants} 
+                        image={image.image}
+                        key={image.image}
+                        color={image.color}
+                        onClick={()=> openImage(image.image)}
+                    />
+                ))}
+            </Images>
+                <LoadMoreButton 
+                    variants={ImageVariants}
                     animate={animate}
+                    onClick={()=> loadImages(3)}
                 >
-                    <Image 
-                        variants={ImageVariants} 
-                        image={require('../assets/example.png')}
-                    />
-                    <Image
-                        variants={ImageVariants} 
-                        image={require('../assets/example.png')}
-                    />
-                    <Image 
-                        variants={ImageVariants} 
-                        image={require('../assets/example.png')}
-                    />
-                    <Image
-                        variants={ImageVariants} 
-                        image={require('../assets/example.png')}
-                    />
-                    <Image
-                        variants={ImageVariants} 
-                        image={require('../assets/example.png')}
-                    />
-                </Images>
-                <LoadMoreButton>Załaduj więcej</LoadMoreButton>
-            </Wrapper>
-        </VisibilitySensor>
+                    Załaduj więcej
+                </LoadMoreButton>
+        </Wrapper>
     )
 };
 

@@ -1,8 +1,11 @@
 import React, { useRef, useState, useLayoutEffect } from "react";
-import styled, { createGlobalStyle } from "styled-components";
+import styled, { createGlobalStyle, keyframes } from "styled-components";
 import gsap from "gsap";
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import { motion, useAnimation } from "framer-motion";
+import VisiblitySensor from "react-visibility-sensor";
+import Parallax from "parallax-js";
 
 import Slider from "../components/slider";
 import SliderInfo from "../components/sliderInfo";
@@ -22,16 +25,13 @@ const Global = createGlobalStyle`
       url('./assets/fonts/Montserrat-ExtraLight') format("truetype"),
   } 
   body, html{
-    background: #0C0B0D;
     margin: 0;
     font-family: "Montserrat";
-    color: white;
     .ti-cursor{
       font-family: Arial, Helvetica, sans-serif;
       font-weight: 300 !important;
       margin: 0 !important;
     }
-    overflow-x: hidden;
   }
   .secondPart{
     color: #3D5AF1;
@@ -64,9 +64,11 @@ const Global = createGlobalStyle`
   }
 `
 
-const Wrapper = styled.div`
+const Wrapper = styled.main`
   width: 100%;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
+  background: #0C0B0D;
+  color: white;
 `;
 
 const Landing = styled.header`
@@ -79,7 +81,7 @@ const Landing = styled.header`
   @media screen and (min-width: 800px) {
       justify-content: flex-start;
   }
-  overflow: hidden;
+  /* overflow: hidden; */
 `;
 
 const LandingBackgrounds = styled.div`
@@ -87,8 +89,8 @@ const LandingBackgrounds = styled.div`
   height: 100%;
   width: 100%;
 `
-
 const LandingBackground = styled.div`
+    transition-property: transform scale;
     background: url(${props=> props.image});
     background-size: cover;
     position: absolute;
@@ -96,14 +98,17 @@ const LandingBackground = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
-    opacity : 0;
+    opacity: 0;
     &.active{
       opacity: 1;
     }
-    transition: opacity 0.2s;
-`
+    transition: 0.2s;
+    @media screen and (min-width: 1000px) {
+      background-attachment: fixed;
+    }
+`;
 
-const LandingDecor = styled.span`
+const LandingDecor = styled(motion.span)`
   display: flex;
   align-items: center;
   font-size: 200px;
@@ -133,7 +138,7 @@ const LandingContent = styled.div`
   }
 `;
 
-const LandingContentTitle = styled.span`
+const LandingContentTitle = styled(motion.span)`
   display: flex;
   white-space: pre;
   font-size: 45px;
@@ -143,9 +148,9 @@ const LandingContentTitle = styled.span`
   }
 `;
 
-const LandingPageContentDescription = styled.span`
+const LandingPageContentDescription = styled(motion.span)`
   font-size: 15px;
-  line-height: 30px;
+  line-height: 30px; 
   color: #CCCCCC;
   width: 298px;
   margin-top: 20px;
@@ -184,7 +189,7 @@ const Section = styled.section`
   }
 `;
 
-const ContactInfos = styled.div`
+const ContactInfos = styled(motion.div)`
   display: flex;
   width: 100%;
   align-items: center;
@@ -201,12 +206,42 @@ const ContactInfos = styled.div`
   }
 `;
 
+const contactInfosVariants = {
+  enter: {
+    transition:{
+        staggerChildren: 0.1
+    }
+  },
+  exit: {
+      transition:{
+          staggerChildren: 0.1
+      }
+  } 
+}
+
+const contactInfoVariants = {
+  enter: {
+    x: 0,
+    opacity: 1
+  },
+  exit: {
+    x: -10,
+    opacity: 0
+  }
+}
+
 const IndexPage = () => {
   const content = useRef(0);
   const decor = useRef(0);
   const landingBackgrounds = useRef(0);
 
+  const changeTitle = useAnimation();
+  const changeDescription = useAnimation();
+  const changeDecor = useAnimation();
+  
   const [ slideState, setSlideState ] = useState(1);
+  const [ contactState, setContactState ] = useState(false);
+  const [ portfolioState, setPortfolioState ] = useState(false);
 
   const titlesNoFormat = [
     "Frontend Dev",
@@ -237,12 +272,45 @@ const IndexPage = () => {
     require('../assets/bg3-mobile.png')
   ];
 
+  const nextTransition = async () => {
+      await changeTitle.start({
+          y: -10,
+          opacity: 0
+      })
+      await changeDescription.start({
+          y: -10,
+          opacity: 0
+      })
+      await changeDecor.start({
+          y: -10,
+          opacity: 0
+      })
+      return new Promise(async ( resolve, reject ) => {
+          resolve();
+          await changeTitle.start({
+            y: 0,
+            opacity: 1
+          })
+          await changeDescription.start({
+            y: 0,
+            opacity: 1
+          })
+          await changeDecor.start({
+            y: 0,
+            opacity: 0.1
+          })
+      });
+  }
+
+  const contactInfosAnimate = contactState ? "enter" : "exit";
+  const portfolioAnimate = portfolioState ? "enter" : "exit";
+
   return(
       <Wrapper>
         <ToastContainer/>
         <Nav/>
         <Global/>
-        <Landing>
+        <Landing data-relative-input="true">
           <LandingBackgrounds ref={landingBackgrounds}>
               {backgrounds.map(background => {
                 if(backgrounds[slideState] === background)
@@ -253,35 +321,56 @@ const IndexPage = () => {
               })}
           </LandingBackgrounds>
           <LandingContent ref={content}>
-            <LandingContentTitle>{<>{titles[slideState]}</>}</LandingContentTitle>
-              <LandingPageContentDescription>
+            <LandingContentTitle animate={changeTitle}>
+              {<>{titles[slideState]}</>}
+            </LandingContentTitle>
+              <LandingPageContentDescription animate={changeDescription} >
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in lobortis mi. Sed tristique efficitur erat. In sit amet tristique dolor.
               </LandingPageContentDescription>
           </LandingContent>
-            <LandingDecor ref={decor}>{titlesNoFormat[slideState]}</LandingDecor>  
-          <Slider setSlideState={setSlideState}/>
+            <LandingDecor ref={decor} animate={changeDecor}>{titlesNoFormat[slideState]}</LandingDecor>  
+          <Slider setSlideState={setSlideState} nextTransition={nextTransition} slideState={slideState}/>
           <SliderInfo slide={slideState}/>         
         </Landing>
         <Content>
+           <SectionTitle title="Portfolio"/>   
             <Section>
-                <SectionTitle title="Portfolio"/>
-                <Gallery/> 
+              <VisiblitySensor intervalDelay={10} onChange={isVisible => {
+                if(isVisible) setPortfolioState(isVisible)
+              }}>
+                  <Gallery animate={portfolioAnimate}/> 
+              </VisiblitySensor>
             </Section>
-            <SectionTitle title="Kontakt"/>
-            <Section>
-                <ContactInfos>
-                    <ContactInfo 
-                      icon="envelope" 
-                      text={
-                        <>supreme24d<span className='secondPart'>@gmail.com</span></>
-                      } 
-                      type="fas"
-                    />
-                    <ContactInfo icon="github" text="BlacKlyExactly" type="fab"/>
-                    <ContactInfo icon="linkedin" text="Not Yet" type="fab"/>
-                </ContactInfos>
-                <ContactForm/>
-            </Section>
+            <SectionTitle title="Kontakt"/>   
+            <VisiblitySensor intervalDelay={10} onChange={isVisible => {
+              if(isVisible) setContactState(isVisible)
+            }}>
+                <Section>
+                  <ContactInfos animate={contactInfosAnimate} variants={contactInfosVariants}>
+                      <ContactInfo 
+                        icon="envelope" 
+                        variants={contactInfoVariants}
+                        text={
+                          <>supreme24d<span className='secondPart'>@gmail.com</span></>
+                        } 
+                        type="fas"
+                      />
+                      <ContactInfo 
+                        icon="github" 
+                        text="BlacKlyExactly" 
+                        type="fab" 
+                        variants={contactInfoVariants}
+                      />
+                      <ContactInfo 
+                        icon="linkedin"
+                        text="Not Yet" 
+                        type="fab"
+                        variants={contactInfoVariants}
+                      />
+                  </ContactInfos>
+                  <ContactForm animate={contactInfosAnimate}/>
+              </Section>
+            </VisiblitySensor>
         </Content>
       </Wrapper>
   )

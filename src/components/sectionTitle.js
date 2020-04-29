@@ -11,9 +11,11 @@ const Wrapper = styled(motion.div)`
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    margin: 30px 0px;
     @media screen and (min-width: 800px) {
         height: 11vw;
         flex-direction: row;
+        margin: 0;
     }
 `;
 

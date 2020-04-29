@@ -4,8 +4,9 @@ import { Helmet } from 'react-helmet';
 import { Form, Field } from 'react-final-form';
 import { toast } from 'react-toastify'
 import axios from "axios";
+import { motion } from "framer-motion";
 
-const Wrapper = styled.form`
+const Wrapper = styled(motion.form)`
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -18,7 +19,7 @@ const Wrapper = styled.form`
     }
 `;
 
-const EmailInput = styled.input`
+const EmailInput = styled(motion.input)`
     width: 100%;
     border: none;
     background: transparent;
@@ -34,7 +35,7 @@ const EmailInput = styled.input`
     }
 `;
 
-const MessageArea = styled.textarea`
+const MessageArea = styled(motion.textarea)`
     font-family: "Montserrat";
     width: 100%;
     background: transparent;
@@ -52,7 +53,7 @@ const MessageArea = styled.textarea`
     resize: none;
 `;
 
-const Buttons = styled.div`
+const Buttons = styled(motion.div)`
     width: 106.5%;
     display: flex;
     align-items: center;
@@ -62,7 +63,7 @@ const Buttons = styled.div`
     @media screen and (min-width: 1300px) {
         flex-direction: row;
     }
-    ./* g-recaptcha{
+    /* g-recaptcha{
         margin-top: 20px;
         @media screen and (min-width: 800px) {
             margin-top: 1vw;
@@ -70,7 +71,7 @@ const Buttons = styled.div`
     } */
 `
 
-const SendMessage = styled.button`
+const SendMessage = styled(motion.button)`
     margin-top: 15px;
     width: 255px;
     height: 66px;
@@ -122,9 +123,34 @@ const SendMessage = styled.button`
     }
 `;
 
-const ContactForm = ()=> {
+const contactFormVariants = {
+    enter: {
+      transition:{
+          staggerChildren: 0.1
+      }
+    },
+    exit: {
+        transition:{
+            staggerChildren: 0.1
+        }
+    } 
+  }
+  
+  const contactInputVariants = {
+    enter: {
+      y: 0,
+      opacity: 1
+    },
+    exit: {
+      y: -10,
+      opacity: 0
+    }
+  }
+
+const ContactForm = ({ animate })=> {
     const EmailField = ({ input, meta, ...rest }) => (
-        <EmailInput 
+        <EmailInput
+            variants={contactInputVariants}
             type="email"
             placeholder="Email"
             {...rest}
@@ -134,6 +160,7 @@ const ContactForm = ()=> {
     
     const MessageField = ({ input, meta, ...rest }) => (
         <MessageArea 
+            variants={contactInputVariants}
             {...rest}
             {...input}
         />
@@ -180,7 +207,11 @@ const ContactForm = ()=> {
         <Form
             onSubmit={onMessageSubmit}
             render={({ handleSubmit, form, submitting, pristine, values })=> (
-                <Wrapper onSubmit={handleSubmit}>
+                <Wrapper 
+                    onSubmit={handleSubmit} 
+                    animate={animate}
+                    variants={contactFormVariants}
+                >
                     <Helmet>
                         <script src="https://www.google.com/recaptcha/api.js?hl=pl" async defer></script>
                     </Helmet>
@@ -188,21 +219,21 @@ const ContactForm = ()=> {
                         component={EmailField}
                         name="email"
                         hintText="Email"
-                        floatingLabelText="Email"
+                        
                     />
                     <Field
                         component={MessageField}
                         name="message"
                         hintText="Wiadomość"
-                        floatingLabelText="Wiadomość"
                     />
-                    <Buttons>
-                        <div 
+                    <Buttons variants={contactFormVariants}>
+                        <motion.div 
                             className="g-recaptcha" 
                             data-sitekey={process.env.GATSBY_CAPTCHA}
                             data-theme="dark"
+                            variants={contactInputVariants} 
                         />
-                        <SendMessage>Wyślij</SendMessage>
+                        <SendMessage variants={contactInputVariants}>Wyślij</SendMessage>
                     </Buttons>
                 </Wrapper>
             )}

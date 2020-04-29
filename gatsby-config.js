@@ -9,6 +9,7 @@ module.exports = {
     author: `@gatsbyjs`,
   },
   plugins: [
+    `gatsby-plugin-transition-link`,
     {
       resolve: 'gatsby-plugin-eslint',
       options: {
