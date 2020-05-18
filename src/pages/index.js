@@ -5,7 +5,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import { motion, useAnimation } from "framer-motion";
 import VisiblitySensor from "react-visibility-sensor";
-import Parallax from "parallax-js";
 
 import Slider from "../components/slider";
 import SliderInfo from "../components/sliderInfo";
